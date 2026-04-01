@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard - CODE Society</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>CODE Society</h1>
+    <nav class="nav" id="nav">
+      <button data-view="clients" class="nav-btn" id="nav-clients">Clients</button>
+      <button data-view="branches" class="nav-btn hidden" id="nav-branches">Branches</button>
+      <button data-view="users" class="nav-btn hidden" id="nav-users">Users</button>
+      <button data-view="reports" class="nav-btn hidden" id="nav-reports">Reports</button>
+      <button id="logout" class="nav-btn danger">Logout</button>
+    </nav>
+  </header>
+  <section id="toast" class="toast hidden"></section>
+
+  <main class="app-main">
+    <section id="view-clients" class="view hidden"></section>
+    <section id="view-branches" class="view hidden"></section>
+    <section id="view-users" class="view hidden"></section>
+    <section id="view-reports" class="view hidden"></section>
+    <section id="view-pending" class="view hidden">
+      <h2>Account Pending Approval</h2>
+      <p class="muted">Your account has been created but is awaiting admin approval. Please contact your administrator to assign a role.</p>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/clients.js"></script>
+  <script src="js/branches.js"></script>
+  <script src="js/users.js"></script>
+  <script src="js/reports.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await ensureSessionOrRedirect();
+      const profile = await getMyProfile();
+      const navClients = document.getElementById('nav-clients');
+      const navBranches = document.getElementById('nav-branches');
+      const navUsers = document.getElementById('nav-users');
+      const navReports = document.getElementById('nav-reports');
+
+      // Simple student logic: if no profile yet, show pending message and hide all nav except logout
+      if (!profile) {
+        document.getElementById('view-pending').classList.remove('hidden');
+        document.getElementById('nav').querySelectorAll('.nav-btn').forEach(btn => {
+          if (btn.id !== 'logout' && btn.id !== 'nav-clients') btn.classList.add('hidden');
+        });
+        // Clients view still loads but user will be blocked by RLS if not assigned
+        initClientsView();
+        setActiveView('pending');
+      } else {
+        const roleName = profile.roles?.name;
+        // Receptionist: only Clients
+        if (roleName === 'receptionist' || roleName === 'staff') {
+          navBranches.classList.add('hidden');
+          navUsers.classList.add('hidden');
+          navReports.classList.add('hidden');
+          initClientsView();
+          setActiveView('clients');
+        } else if (roleName === 'admin') {
+          // Admin: all
+          navBranches.classList.remove('hidden');
+          navUsers.classList.remove('hidden');
+          navReports.classList.remove('hidden');
+          initClientsView();
+          initBranchesView();
+          initUsersView();
+          initReportsView();
+          setActiveView('clients');
+        } else {
+          // Viewer or unknown: read-only clients
+          navBranches.classList.add('hidden');
+          navUsers.classList.add('hidden');
+          navReports.classList.add('hidden');
+          initClientsView();
+          setActiveView('clients');
+        }
+      }
+
+      initNavigation();
+      document.getElementById('logout').addEventListener('click', async () => {
+        await signOut();
+        window.location.href = 'index.html';
+      });
+    });
+  </script>
+</body>
+</html>
