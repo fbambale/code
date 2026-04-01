@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CODE Society - Digital Registration</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="auth-container">
+    <section class="card">
+      <h1>CODE Society Kenya</h1>
+      <p class="muted">Digital Registration & Records Management</p>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="login">Reception Login</button>
+        <button class="tab" data-tab="signup">Reception Sign up</button>
+      </div>
+
+      <form id="login-form" class="form" data-tab="login">
+        <label>Email
+          <input type="email" id="login-email" required autocomplete="username" />
+        </label>
+        <label>Password
+          <input type="password" id="login-password" required autocomplete="current-password" />
+        </label>
+        <button type="submit" class="btn primary">Login</button>
+        <p id="login-error" class="error"></p>
+      </form>
+
+      <form id="signup-form" class="form hidden" data-tab="signup">
+        <label>Full name
+          <input type="text" id="signup-name" required />
+        </label>
+        <label>Email
+          <input type="email" id="signup-email" required autocomplete="email" />
+        </label>
+        <label>Password
+          <input type="password" id="signup-password" required autocomplete="new-password" />
+          <small class="muted">Must be 12+ chars with upper, lower, number, special; no spaces.</small>
+          <div id="password-meter" class="meter"></div>
+          <ul id="password-rules" class="rules"></ul>
+        </label>
+        <button type="submit" class="btn primary">Create account</button>
+        <p id="signup-error" class="error"></p>
+        <p class="muted">You will receive a verification email.</p>
+      </form>
+
+      <p class="muted">Administrator? <a href="admin.html">Go to Admin Login</a></p>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setupAuthTabs();
+      setupPasswordMeter('#signup-password', '#password-meter', '#password-rules');
+      attachAuthHandlers();
+    });
+  </script>
+</body>
+</html>
